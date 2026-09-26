@@ -16,3 +16,6 @@ function board(){let a={};levels.forEach(l=>l.records.forEach(r=>a[r[0]]=(a[r[0]
 $('spin').onclick=()=>{ $('result').textContent='🎲';setTimeout(()=>{$('result').textContent=levels[Math.floor(Math.random()*levels.length)].name},450)};
 $('submit').onclick=()=>$('modal').classList.remove('hidden');$('close').onclick=()=>$('modal').classList.add('hidden');$('demo').onclick=()=>{$('msg').textContent='Demo submission received — database coming soon.'};
 render();show(levels[0]);
+.hidden {
+    display: none !important;
+}
