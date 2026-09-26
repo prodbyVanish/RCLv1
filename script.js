@@ -7,12 +7,8 @@ const levels = [
     id: "111838059",
     pass: "No Pass",
     qualify: "79% or better to qualify",
-    records: [
-      ["YourName", 100],
-      ["Player2", 92]
-    ]
+    records: [["YourName", 100], ["Player2", 92]]
   },
-
   {
     name: "TRAGIC",
     creator: "zoinks lil cousin",
@@ -21,11 +17,8 @@ const levels = [
     id: "123456789",
     pass: "No Pass",
     qualify: "80% or better to qualify",
-    records: [
-      ["YourName", 87]
-    ]
+    records: [["YourName", 87]]
   },
-
   {
     name: "Wave Challenge",
     creator: "RCL Creator",
@@ -36,7 +29,6 @@ const levels = [
     qualify: "75% or better to qualify",
     records: []
   },
-
   {
     name: "Happy Purple",
     creator: "RCL Creator",
@@ -47,7 +39,6 @@ const levels = [
     qualify: "70% or better to qualify",
     records: []
   },
-
   {
     name: "Childlike",
     creator: "RCL Creator",
@@ -58,7 +49,6 @@ const levels = [
     qualify: "70% or better to qualify",
     records: []
   },
-
   {
     name: "Smurtzii Challenge",
     creator: "RCL Creator",
@@ -69,7 +59,6 @@ const levels = [
     qualify: "70% or better to qualify",
     records: []
   },
-
   {
     name: "Bandit",
     creator: "RCL Creator",
@@ -82,239 +71,145 @@ const levels = [
   }
 ];
 
-const $ = id => document.getElementById(id);
+const $ = x => document.getElementById(x);
 
-
-// =========================
-// SHOW LEVEL
-// =========================
-
-function showLevel(level) {
-  $("title").textContent = level.name;
-  $("creator").textContent = level.creator;
-  $("verifier").textContent = level.verifier;
+function show(l) {
+  $("title").textContent = l.name;
+  $("creator").textContent = l.creator;
+  $("verifier").textContent = l.verifier;
   $("publisher").textContent = "RCL";
-  $("points").textContent = level.points;
-  $("id").textContent = level.id;
-  $("pass").textContent = level.pass;
+  $("points").textContent = l.points;
+  $("id").textContent = l.id;
+  $("pass").textContent = l.pass;
+  $("qualify").textContent = l.qualify;
 
-  $("qualify").textContent = level.qualify;
-
-  $("records").innerHTML = level.records
+  $("records").innerHTML = l.records
     .map(r => `<div class="record"><b>${r[0]}</b> — ${r[1]}%</div>`)
     .join("");
 }
-
-
-// =========================
-// RENDER LIST
-// =========================
 
 function render(filter = "") {
   let out = "";
 
   levels
-    .filter(level =>
-      level.name.toLowerCase().includes(filter.toLowerCase())
-    )
-    .forEach((level, index) => {
+    .filter(l => l.name.toLowerCase().includes(filter.toLowerCase()))
+    .forEach((l, i) => {
+      let n = levels.indexOf(l) + 1;
+
       out += `
-        <div
-          class="level ${filter && index === 0 ? "active" : ""}"
-          data-index="${levels.indexOf(level)}"
-        >
-          <span class="rank">${levels.indexOf(level) + 1}</span>
-          <span class="level-name">${level.name}</span>
-          <span class="level-points">${level.points}</span>
+        <div class="level ${filter && i === 0 ? "active" : ""}"
+             data-i="${levels.indexOf(l)}">
+          <span class="rank">${n}</span>
+          <span>${l.name}</span>
+          <span>${l.points}</span>
         </div>
       `;
     });
 
   $("list").innerHTML = out;
 
-  document.querySelectorAll(".level").forEach(item => {
-    item.onclick = () => {
-      showLevel(levels[Number(item.dataset.index)]);
-
-      document
-        .querySelectorAll(".level")
-        .forEach(x => x.classList.remove("active"));
-
-      item.classList.add("active");
-    };
+  document.querySelectorAll(".level").forEach(x => {
+    x.onclick = () => show(levels[x.dataset.i]);
   });
 }
 
+function page(p) {
+  document.querySelectorAll(".page")
+    .forEach(x => x.classList.add("hidden"));
 
-// =========================
-// SEARCH
-// =========================
+  $(p).classList.remove("hidden");
 
-$("search").oninput = e => {
-  render(e.target.value);
-};
+  document.querySelectorAll(".nav")
+    .forEach(x => x.classList.toggle("active", x.dataset.page === p));
+}
 
-
-// =========================
-// DARK MODE
-// =========================
+$("search").oninput = e => render(e.target.value);
 
 $("theme").onclick = () => {
   document.body.classList.toggle("dark");
 };
 
-
-// =========================
-// NAVIGATION
-// =========================
-
-document.querySelectorAll(".nav").forEach(button => {
-  button.onclick = () => {
-    document
-      .querySelectorAll(".nav")
-      .forEach(x => x.classList.remove("active"));
-
-    button.classList.add("active");
-
-    const page = button.dataset.page;
-
-    if (page === "list") {
-      $("listPage").style.display = "";
-      $("leaderboardPage").style.display = "none";
-      $("roulettePage").style.display = "none";
-    }
-
-    if (page === "leaderboard") {
-      $("listPage").style.display = "none";
-      $("leaderboardPage").style.display = "";
-      $("roulettePage").style.display = "none";
-
-      board();
-    }
-
-    if (page === "roulette") {
-      $("listPage").style.display = "none";
-      $("leaderboardPage").style.display = "none";
-      $("roulettePage").style.display = "";
-    }
-  };
+document.querySelectorAll(".nav").forEach(x => {
+  x.onclick = () => page(x.dataset.page);
 });
 
-
-// =========================
-// LEADERBOARD
-// =========================
-
 function board() {
-  const entries = [];
+  let a = [];
 
-  levels.forEach(level => {
-    level.records.forEach(record => {
-      entries.push({
-        player: record[0],
-        percent: record[1],
-        points: Math.floor((record[1] / 100) * level.points)
-      });
+  levels.forEach(l => {
+    l.records.forEach(r => {
+      a.push([
+        r[0],
+        (r[0] || 0) + l.points
+      ]);
     });
   });
 
-  entries.sort((a, b) => b.points - a.points);
+  let s = Object.entries(
+    a.reduce((o, x) => {
+      o[x[0]] = (o[x[0]] || 0) + x[1];
+      return o;
+    }, {})
+  ).sort((a, b) => b[1] - a[1]);
 
-  $("leaderboard").innerHTML = entries
-    .map(
-      (entry, index) => `
-        <div class="board-row">
-          <span>#${index + 1}</span>
-          <b>${entry.player}</b>
-          <span>${entry.percent}%</span>
-          <span>${entry.points} pts</span>
-        </div>
-      `
-    )
-    .join("");
+  $("board").innerHTML = s.length
+    ? s.map((r, i) =>
+        `<div class="boardrow">
+          <span>#${i + 1}</span>
+          <b>${r[0]}</b>
+          <span>${r[1]} pts</span>
+        </div>`
+      ).join("")
+    : "No records yet.";
 }
 
-
-// =========================
-// ROULETTE
-// =========================
-
-$("result").onclick = () => {
-  const randomLevel =
-    levels[Math.floor(Math.random() * levels.length)];
-
-  $("rouletteResult").textContent = randomLevel.name;
-
-  showLevel(randomLevel);
+$("spin").onclick = () => {
+  setTimeout(() => {
+    $("result").textContent =
+      "🎲 " + levels[Math.floor(Math.random() * levels.length)].name;
+  }, 450);
 };
 
 
-// =========================
-// SUBMIT RECORD MODAL
-// =========================
+/* =========================
+   SUBMIT RECORD MODAL
+   ========================= */
 
-const modal = $("modal");
-const submitButton = $("submit");
-const closeButton = $("close");
-const demoButton = $("demo");
-const message = $("msg");
+/* THIS IS THE IMPORTANT FIX */
+$("modal").classList.add("hidden");
 
 
-// IMPORTANT:
-// Hide modal immediately when the page loads.
-if (modal) {
-  modal.classList.add("hidden");
-}
+$("submit").onclick = () => {
+  $("modal").classList.remove("hidden");
+};
 
 
-// Open modal
-if (submitButton) {
-  submitButton.onclick = () => {
-    modal.classList.remove("hidden");
-  };
-}
+$("close").onclick = () => {
+  $("modal").classList.add("hidden");
+};
 
 
-// Close modal with X
-if (closeButton) {
-  closeButton.onclick = () => {
-    modal.classList.add("hidden");
-  };
-}
+$("demo").onclick = () => {
+  $("msg").textContent =
+    "Demo submission received — database coming soon.";
+};
 
 
-// Close modal by clicking outside it
-if (modal) {
-  modal.onclick = event => {
-    if (event.target === modal) {
-      modal.classList.add("hidden");
-    }
-  };
-}
+/* Also close when clicking outside the popup */
+$("modal").onclick = e => {
+  if (e.target === $("modal")) {
+    $("modal").classList.add("hidden");
+  }
+};
 
 
-// Demo submission
-if (demoButton) {
-  demoButton.onclick = () => {
-    if (message) {
-      message.textContent =
-        "Demo submission received — database coming soon.";
-    }
-  };
-}
-
-
-// ESC closes modal
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && modal) {
-    modal.classList.add("hidden");
+/* ESC closes it too */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    $("modal").classList.add("hidden");
   }
 });
 
 
-// =========================
-// START WEBSITE
-// =========================
-
 render();
-showLevel(levels[0]);
+show(levels[0]);
